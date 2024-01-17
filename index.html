@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta
+      name="description"
+      content="FortiGate Password Decryptor"
+    />
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    <title>FortiGate Password Decryptor</title>
+  </head>
+  <body>
+      <div style="font-family: monospace">
+        <textarea id="i" style="resize: none; width: 100vw; height: 30vh; "></textarea>
+        <p id="o"></p>
+      </div>
+        <script type="text/javascript" src="https://cdn.rawgit.com/ricmoo/aes-js/e27b99df/index.js"></script>
+        <script>
+function decrypt(enc) {
+    const dec = Uint8Array.from(atob(enc), c => c.charCodeAt(0));
+    const key = new Uint8Array([77, 97, 114, 121, 32, 104, 97, 100, 32, 97, 32, 108, 105, 116, 116, 108]);
+    const iv = new Uint8Array(16);
+    iv.set(dec.slice(0, 4));
+    const ct = dec.slice(4);
+
+    const cbc = new aesjs.ModeOfOperation.cbc(key, iv);
+    const res = cbc.decrypt(ct);
+    const idx = res.indexOf(0);
+    const txt = new TextDecoder();
+    return txt.decode(res.slice(0, idx));
+}
+function process(s) {
+    const lines = s.split("\n").filter(x => x);
+    return lines.map(x => decrypt(x.trim())).join("\n");
+}
+const i = document.getElementById("i");
+const o = document.getElementById("o");
+
+window.onload = () => {
+    i.value = "";
+};
+i.addEventListener("input", e => {
+    o.innerText = process(e.target.value);
+});
+        </script>
+  </body>
+</html>
